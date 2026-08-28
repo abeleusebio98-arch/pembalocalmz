@@ -3,14 +3,14 @@ import { anuncios } from "./anuncios";
 import {
   BadgeCheck,
   Car,
-  Crown,
+  Info,
   Laptop,
   MapPin,
   Menu,
   MessageCircle,
   Monitor,
+  Navigation,
   Search,
-  ShieldCheck,
   Shirt,
   Smartphone,
   Sofa,
@@ -100,6 +100,61 @@ const normalise = (value = "") =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+const searchIntents = [
+  {
+    triggers: ["onde comer", "comer", "comida", "restaurante", "cafe"],
+    matches: [
+      "restaurantes",
+      "restaurante",
+      "comida",
+      "cafe",
+      "pizza",
+      "hamburguer",
+      "frango",
+    ],
+  },
+  {
+    triggers: ["mecanico", "oficina", "carro", "veiculo"],
+    matches: ["veiculos", "automoveis", "mecanico", "oficina", "carro"],
+  },
+  {
+    triggers: ["reparar telefone", "telefone", "telemovel", "smartphone"],
+    matches: [
+      "telemoveis",
+      "tecnologia",
+      "telefone",
+      "telemovel",
+      "smartphone",
+    ],
+  },
+  {
+    triggers: ["hospedagem", "dormir", "hotel", "alojamento"],
+    matches: ["hoteis", "hotel", "hospedagem", "resort", "alojamento"],
+  },
+  {
+    triggers: ["mercado", "supermercado", "compras"],
+    matches: ["supermercados", "supermercado", "mercado", "compras"],
+  },
+];
+
+const getSearchTerms = (query) => {
+  const term = normalise(query.trim());
+  if (!term) return [];
+
+  const intent = searchIntents.find(({ triggers }) =>
+    triggers.some((trigger) => term.includes(trigger)),
+  );
+
+  return intent ? [term, ...intent.matches] : [term];
+};
+
+const quickSearches = [
+  { label: "Onde comer?", icon: Utensils },
+  { label: "Mecânico", icon: Wrench },
+  { label: "Reparar telefone", icon: Smartphone },
+  { label: "Hospedagem", icon: Sofa },
+];
+
 function Brand({ dark = true }) {
   return (
     <a
@@ -129,7 +184,7 @@ function Brand({ dark = true }) {
             dark ? "text-white/45" : "text-slate-500"
           }`}
         >
-          Marketplace inteligente
+          Guia local de Pemba
         </span>
       </span>
     </a>
@@ -165,10 +220,10 @@ function ListingCard({ item }) {
               {item.descricao}
             </p>
           </div>
-          <BadgeCheck
+          <MapPin
             className="mt-0.5 shrink-0 text-emerald-400"
             size={20}
-            aria-label="Negócio local"
+            aria-label="Local em Pemba"
           />
         </div>
 
@@ -181,7 +236,7 @@ function ListingCard({ item }) {
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-yellow-400 px-3 text-sm font-extrabold text-[#07101f] transition hover:bg-yellow-300"
             >
               <MapPin size={16} />
-              Localização
+              Ver localização
             </a>
           ) : (
             <span className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 text-sm text-white/35">
@@ -213,8 +268,8 @@ function ListingCard({ item }) {
 function SellerPanel({ onClose }) {
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const emailLink = isMobile
-    ? "mailto:pembalocal@gmail.com?subject=Pedido%20de%20vendedor%20—%20Pemba%20Local&body=Nome:%0A%0ATelefone:%0A%0ANome%20da%20loja:%0A%0ACategoria:%0A%0APlano%20escolhido:%0A[ ] Gratuito%0A[ ] Destaque Premium%0A%0AMensagem:"
-    : "https://mail.google.com/mail/?view=cm&fs=1&to=pembalocal@gmail.com&su=Pedido%20de%20vendedor%20—%20Pemba%20Local&body=Nome:%0A%0ATelefone:%0A%0ANome%20da%20loja:%0A%0ACategoria:%0A%0APlano%20escolhido:%0A[ ] Gratuito%0A[ ] Destaque Premium%0A%0AMensagem:";
+    ? "mailto:pembalocal@gmail.com?subject=Pedido%20de%20anúncio%20—%20Pemba%20Local&body=Nome:%0A%0ATelefone:%0A%0ANome%20do%20estabelecimento:%0A%0ACategoria:%0A%0APlano%20escolhido:%0A[ ] Gratuito%0A[ ] Destaque Premium%0A%0AMensagem:"
+    : "https://mail.google.com/mail/?view=cm&fs=1&to=pembalocal@gmail.com&su=Pedido%20de%20anúncio%20—%20Pemba%20Local&body=Nome:%0A%0ATelefone:%0A%0ANome%20do%20estabelecimento:%0A%0ACategoria:%0A%0APlano%20escolhido:%0A[ ] Gratuito%0A[ ] Destaque Premium%0A%0AMensagem:";
 
   const plans = [
     {
@@ -276,14 +331,14 @@ function SellerPanel({ onClose }) {
           <div className="absolute -right-24 -top-28 h-80 w-80 rounded-full bg-yellow-400/15 blur-3xl" />
           <div className="relative">
             <span className="inline-flex rounded-full bg-emerald-400/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-300">
-              Área do vendedor
+              Anunciar um local
             </span>
             <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.05] sm:text-5xl lg:text-6xl">
-              Coloque o seu negócio no mapa de Pemba.
+              Ajude mais pessoas a encontrar o seu local em Pemba.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/65 sm:text-lg">
-              Publique o seu anúncio, seja encontrado por clientes locais e
-              receba contactos de forma simples.
+              Envie as informações essenciais do estabelecimento para aparecer
+              no guia local e ser encontrado com mais facilidade.
             </p>
             <a
               href={emailLink}
@@ -291,7 +346,7 @@ function SellerPanel({ onClose }) {
               rel="noreferrer"
               className="mt-8 inline-flex min-h-13 items-center justify-center rounded-2xl bg-yellow-400 px-7 py-4 font-extrabold text-[#07101f] transition hover:bg-yellow-300"
             >
-              Publicar o meu anúncio
+              Enviar pedido de anúncio
             </a>
           </div>
 
@@ -389,19 +444,23 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const filteredListings = useMemo(() => {
-    const term = normalise(search.trim());
-    if (!term) return allListings;
+    const terms = getSearchTerms(search);
+    if (terms.length === 0) return allListings;
 
-    return allListings.filter((item) =>
-      normalise(
+    return allListings.filter((item) => {
+      const searchableText = normalise(
         `${item.nome} ${item.descricao} ${item.categoryName}`,
-      ).includes(term),
-    );
+      );
+
+      return terms.some((term) => searchableText.includes(term));
+    });
   }, [search]);
 
-  const activeCategories = categories.filter(
-    (category) => category.items.length > 0,
-  ).length;
+  const suggestedListing = search.trim() ? filteredListings[0] : null;
+  const SuggestedIcon =
+    categories.find(
+      (category) => category.name === suggestedListing?.categoryName,
+    )?.icon || MapPin;
 
   const openSeller = () => {
     setMobileMenuOpen(false);
@@ -410,9 +469,11 @@ export default function App() {
 
   const selectCategory = (name) => {
     setSearch(name);
-    document
-      .getElementById("anuncios")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      document
+        .getElementById("anuncios")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   };
 
   return (
@@ -448,24 +509,17 @@ export default function App() {
               onClick={openSeller}
               className="transition hover:text-white"
             >
-              Seja Premium
+              Anunciar um local
             </button>
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
-            <button
-              type="button"
-              onClick={openSeller}
-              className="px-3 text-sm font-bold text-white/70 transition hover:text-white"
-            >
-              Área do vendedor
-            </button>
+          <div className="hidden items-center md:flex">
             <button
               type="button"
               onClick={openSeller}
               className="rounded-xl bg-yellow-400 px-5 py-3 text-sm font-extrabold text-[#07101f] transition hover:bg-yellow-300"
             >
-              Publicar anúncio
+              Anunciar um local
             </button>
           </div>
 
@@ -502,7 +556,7 @@ export default function App() {
                 onClick={openSeller}
                 className="mt-2 rounded-xl bg-yellow-400 px-5 py-3.5 text-left font-extrabold text-[#07101f]"
               >
-                Publicar anúncio
+                Anunciar um local
               </button>
             </nav>
           </div>
@@ -512,28 +566,31 @@ export default function App() {
       <main className="relative">
         <section
           id="inicio"
-          className="mx-auto grid max-w-7xl gap-9 px-5 pb-14 pt-12 sm:px-8 sm:pt-16 lg:grid-cols-[1.2fr_.8fr] lg:items-center lg:pb-20 lg:pt-20"
+          className="relative mx-auto max-w-7xl overflow-hidden px-5 pb-14 pt-14 text-center sm:px-8 sm:pb-20 sm:pt-20 lg:pt-24"
         >
-          <div>
+          <div className="pointer-events-none absolute left-1/2 top-4 h-80 w-[42rem] max-w-[92vw] -translate-x-1/2 rounded-full bg-yellow-400/[0.12] blur-3xl" />
+          <div className="relative mx-auto max-w-5xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.17em] text-yellow-300">
-              <MapPin size={14} />
-              Feito para Pemba
+              <Navigation size={14} />
+              Encontre em Pemba
             </span>
-            <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.98] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
-              Encontre tudo o que precisa,{" "}
-              <span className="text-yellow-400">perto de si.</span>
+            <h1 className="mx-auto mt-6 max-w-4xl text-5xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl lg:text-7xl">
+              Procure. Encontre.{" "}
+              <span className="text-yellow-400">Siga até ao local.</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-white/65 sm:text-lg">
-              Descubra restaurantes, serviços, hotéis e negócios locais.
-              Consulte a localização e entre em contacto sem complicações.
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/65 sm:text-lg">
+              Uma pesquisa rápida para descobrir serviços, lojas, restaurantes
+              e outros lugares em Pemba.
             </p>
 
             <form
-              className="mt-8 rounded-[22px] border border-white/10 bg-white p-2 shadow-[0_24px_80px_rgba(0,0,0,.32)] sm:flex"
+              className="mx-auto mt-8 max-w-3xl rounded-[22px] border border-white/10 bg-white p-2 text-left shadow-[0_24px_80px_rgba(0,0,0,.32)] sm:flex"
               onSubmit={(event) => {
                 event.preventDefault();
                 document
-                  .getElementById("anuncios")
+                  .getElementById(
+                    suggestedListing ? "resultado-rapido" : "anuncios",
+                  )
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
@@ -544,7 +601,7 @@ export default function App() {
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="O que procura em Pemba?"
+                  placeholder="Onde encontro um mecânico?"
                   className="w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
                 />
                 {search && (
@@ -558,77 +615,74 @@ export default function App() {
                   </button>
                 )}
               </label>
-              <div className="hidden items-center gap-2 border-l border-slate-200 px-4 text-xs font-semibold text-slate-500 sm:flex">
-                <MapPin size={16} />
-                Pemba, Cabo Delgado
-              </div>
               <button
                 type="submit"
                 className="mt-2 min-h-13 w-full rounded-2xl bg-yellow-400 px-7 font-extrabold text-[#07101f] transition hover:bg-yellow-300 sm:mt-0 sm:w-auto"
               >
-                Pesquisar
+                Encontrar
               </button>
             </form>
 
-            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/55">
-              <span className="flex items-center gap-2">
-                <MapPin size={15} className="text-yellow-400" /> Localização real
-              </span>
-              <span className="flex items-center gap-2">
-                <BadgeCheck size={15} className="text-emerald-400" /> Negócios
-                locais
-              </span>
-              <span className="flex items-center gap-2">
-                <ShieldCheck size={15} className="text-cyan-400" /> Contacto
-                direto
-              </span>
+            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+              {quickSearches.map(({ label, icon: Icon }) => (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={() => setSearch(label)}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-white/70 transition hover:border-yellow-400/30 hover:bg-white/[0.075] hover:text-white"
+                >
+                  <Icon size={17} className="text-yellow-300" />
+                  {label}
+                </button>
+              ))}
             </div>
-          </div>
 
-          <aside className="relative overflow-hidden rounded-[32px] border border-yellow-400/20 bg-gradient-to-br from-yellow-400/[0.14] via-white/[0.06] to-emerald-400/[0.08] p-7 shadow-[0_30px_90px_rgba(0,0,0,.3)] sm:p-9">
-            <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-yellow-400/15 blur-3xl" />
-            <div className="relative">
-              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-yellow-400 text-[#07101f] shadow-lg shadow-yellow-400/15">
-                <Crown size={27} fill="currentColor" />
-              </span>
-              <p className="mt-7 text-xs font-extrabold uppercase tracking-[0.18em] text-yellow-300">
-                Para negócios locais
-              </p>
-              <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-                Faça o seu negócio ser encontrado.
-              </h2>
-              <p className="mt-4 leading-7 text-white/60">
-                Publique gratuitamente durante 7 dias ou escolha o destaque
-                Premium para aparecer primeiro.
-              </p>
-              <button
-                type="button"
-                onClick={openSeller}
-                className="mt-7 inline-flex min-h-13 w-full items-center justify-center rounded-2xl bg-white px-6 font-extrabold text-[#07101f] transition hover:bg-yellow-50 sm:w-auto"
+            {suggestedListing && (
+              <article
+                id="resultado-rapido"
+                className="scroll-mt-24 mx-auto mt-10 grid max-w-4xl gap-5 rounded-[28px] border border-white/10 bg-white/[0.06] p-5 text-left shadow-[0_22px_70px_rgba(0,0,0,.24)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6"
               >
-                Conhecer os planos
-              </button>
+                <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-yellow-300 to-amber-500 text-[#07101f] sm:mx-0">
+                  <SuggestedIcon size={26} />
+                </span>
+                <div>
+                  <p className="text-center text-[11px] font-extrabold uppercase tracking-[0.14em] text-emerald-400 sm:text-left">
+                    Resultado sugerido
+                  </p>
+                  <h2 className="mt-2 text-center text-xl font-black sm:text-left sm:text-2xl">
+                    {suggestedListing.nome}
+                  </h2>
+                  <p className="mt-2 flex items-center justify-center gap-2 text-sm text-white/50 sm:justify-start">
+                    <MapPin size={16} /> Pemba, Cabo Delgado
+                  </p>
+                </div>
+                {suggestedListing.localizacao ? (
+                  <a
+                    href={suggestedListing.localizacao}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 font-extrabold text-[#07101f] transition hover:bg-emerald-300"
+                  >
+                    <Navigation size={18} />
+                    Ver localização
+                  </a>
+                ) : (
+                  <span className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/10 px-5 text-sm font-bold text-white/40">
+                    Localização em atualização
+                  </span>
+                )}
+              </article>
+            )}
 
-              <div className="mt-8 grid grid-cols-2 gap-3 border-t border-white/10 pt-6">
-                <div>
-                  <strong className="block text-3xl text-yellow-400">
-                    {allListings.length}
-                  </strong>
-                  <span className="mt-1 block text-xs text-white/45">
-                    negócios listados
-                  </span>
-                </div>
-                <div>
-                  <strong className="block text-3xl text-emerald-400">
-                    {activeCategories}
-                  </strong>
-                  <span className="mt-1 block text-xs text-white/45">
-                    categorias ativas
-                  </span>
-                </div>
-              </div>
-            </div>
-          </aside>
+            <p className="mx-auto mt-7 flex max-w-3xl items-start justify-center gap-3 text-left text-xs leading-6 text-white/45 sm:text-sm">
+              <Info size={17} className="mt-1 shrink-0 text-white/55" />
+              <span>
+                O Pemba Local apenas disponibiliza informações de localização
+                e contacto. Qualquer negociação é realizada diretamente entre
+                o utilizador e o estabelecimento.
+              </span>
+            </p>
+          </div>
         </section>
 
         <section
@@ -676,8 +730,8 @@ export default function App() {
                     </strong>
                     <span className="mt-1 block text-[11px] text-white/40">
                       {category.items.length === 1
-                        ? "1 anúncio"
-                        : `${category.items.length} anúncios`}
+                        ? "1 local"
+                        : `${category.items.length} locais`}
                     </span>
                   </button>
                 );
@@ -698,7 +752,7 @@ export default function App() {
               <h2 className="mt-2 text-3xl font-black sm:text-4xl">
                 {search
                   ? `Resultados para “${search}”`
-                  : "Negócios e lugares em destaque"}
+                  : "Locais e serviços em Pemba"}
               </h2>
               <p className="mt-3 text-sm text-white/50">
                 {filteredListings.length === 1
@@ -741,7 +795,7 @@ export default function App() {
                 onClick={() => setSearch("")}
                 className="mt-6 rounded-xl bg-yellow-400 px-6 py-3 font-extrabold text-[#07101f]"
               >
-                Ver todos os anúncios
+                Ver todos os locais
               </button>
             </div>
           )}
@@ -760,8 +814,7 @@ export default function App() {
                 Como funciona
               </h2>
               <p className="mt-3 leading-7 text-white/50">
-                Do que procura até ao contacto com o negócio em apenas alguns
-                passos.
+                Da pesquisa à indicação do local em apenas alguns passos.
               </p>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -769,22 +822,22 @@ export default function App() {
                 [
                   Search,
                   "Pesquise",
-                  "Digite o produto, serviço ou lugar que procura.",
+                  "Digite o serviço, estabelecimento ou lugar que procura.",
                 ],
                 [
                   MapPin,
-                  "Descubra",
-                  "Compare opções disponíveis em Pemba.",
+                  "Encontre",
+                  "Consulte as opções disponíveis no guia de Pemba.",
+                ],
+                [
+                  Navigation,
+                  "Abra a localização",
+                  "Siga para a localização externa disponibilizada pelo estabelecimento.",
                 ],
                 [
                   MessageCircle,
-                  "Entre em contacto",
-                  "Fale diretamente com o negócio quando o contacto estiver disponível.",
-                ],
-                [
-                  ShieldCheck,
-                  "Combine com segurança",
-                  "Confirme todos os detalhes antes de fechar o negócio.",
+                  "Contacte diretamente",
+                  "Quando disponível, fale diretamente com o estabelecimento.",
                 ],
               ].map(([Icon, title, text], index) => (
                 <article
@@ -812,10 +865,10 @@ export default function App() {
             <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full border-[42px] border-black/5" />
             <div className="relative max-w-3xl">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#07101f]/55">
-                Tem um negócio em Pemba?
+                Tem um estabelecimento em Pemba?
               </p>
               <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-                Apareça onde os seus clientes estão à procura.
+                Faça o seu local ser encontrado com mais facilidade.
               </h2>
               <p className="mt-3 leading-7 text-[#07101f]/65">
                 O primeiro anúncio é gratuito durante 7 dias.
@@ -826,7 +879,7 @@ export default function App() {
               onClick={openSeller}
               className="relative mt-7 inline-flex min-h-13 w-full items-center justify-center rounded-2xl bg-[#07101f] px-7 py-4 font-extrabold text-white transition hover:bg-slate-800 sm:w-auto lg:mt-0"
             >
-              Publicar anúncio
+              Anunciar um local
             </button>
           </div>
         </section>
@@ -837,7 +890,8 @@ export default function App() {
           <div>
             <Brand />
             <p className="mt-5 max-w-sm text-sm leading-7 text-white/45">
-              Conectando pessoas e negócios locais em Pemba, Cabo Delgado.
+              Um guia rápido para encontrar locais e serviços em Pemba, Cabo
+              Delgado.
             </p>
           </div>
           <div>
@@ -855,21 +909,21 @@ export default function App() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-extrabold">Para vendedores</h3>
+            <h3 className="text-sm font-extrabold">Para estabelecimentos</h3>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm text-white/45">
               <button
                 type="button"
                 onClick={openSeller}
                 className="hover:text-white"
               >
-                Publicar anúncio
+                Anunciar um local
               </button>
               <button
                 type="button"
                 onClick={openSeller}
                 className="hover:text-white"
               >
-                Planos e preços
+                Destaques e preços
               </button>
               <a
                 href="mailto:pembalocal@gmail.com"
@@ -879,6 +933,16 @@ export default function App() {
               </a>
             </div>
           </div>
+        </div>
+        <div className="border-t border-white/10 px-5 py-5">
+          <p className="mx-auto flex max-w-4xl items-start justify-center gap-2 text-center text-xs leading-5 text-white/35">
+            <Info size={15} className="mt-0.5 shrink-0" />
+            <span>
+              O Pemba Local apenas disponibiliza informações de localização e
+              contacto. Qualquer negociação é realizada diretamente entre o
+              utilizador e o estabelecimento.
+            </span>
+          </p>
         </div>
         <div className="border-t border-white/10 px-5 py-5 text-center text-xs text-white/30">
           © 2026 Pemba Local. Todos os direitos reservados.
